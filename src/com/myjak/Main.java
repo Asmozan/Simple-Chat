@@ -1,13 +1,15 @@
 package com.myjak;
 
-import com.myjak.logic.Server;
 import com.myjak.logic.Client;
+import com.myjak.logic.Server;
 
 import java.util.Scanner;
 
-public class Main {
+public class Main
+{
 
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
         int portNumber = 4444;
         String host = "localhost";
 
