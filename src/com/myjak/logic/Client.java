@@ -15,10 +15,22 @@ public class Client {
         this.serverPortUsed = portNumber;
     }
 
-    public void startClient(Scanner scan){
+    public static String validateUsername(Scanner scanner)
+    {
+        String userName = scanner.nextLine();
+        while(userName == null || userName.trim().equals("")){
+            userName = scanner.nextLine();
+            if(userName.trim().equals("")){
+                System.out.println("Invalid username provided. Please try again:");
+            }
+        }
+        return userName;
+    }
+
+    public void start(Scanner scan){
         try{
             Socket socket = new Socket(serverHost, serverPortUsed);
-            Thread.sleep(1000); // waiting for network communicating.
+            Thread.sleep(1234);
 
             ServerThread serverThread = new ServerThread(socket, userName);
             Thread serverAccessThread = new Thread(serverThread);
@@ -27,15 +39,9 @@ public class Client {
                 if(scan.hasNextLine()){
                     serverThread.addNextMessage(scan.nextLine());
                 }
-                // NOTE: scan.hasNextLine waits input (in the other words block this thread's process).
-                // NOTE: If you use buffered reader or something else not waiting way,
-                // NOTE: I recommends write waiting short time like following.
-                // else {
-                //    Thread.sleep(200);
-                // }
             }
         }catch(IOException ex){
-            System.err.println("Fatal Connection error!");
+            System.err.println("Fatal Connection Error!");
             ex.printStackTrace();
         }catch(InterruptedException ex){
             System.out.println("Interrupted");

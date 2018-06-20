@@ -8,9 +8,9 @@ import java.util.Scanner;
 public class ClientThread implements Runnable {
     private Socket socket;
     private PrintWriter clientOut;
-    private ChatServer server;
+    private Server server;
 
-    public ClientThread(ChatServer server, Socket socket){
+    ClientThread(Server server, Socket socket){
         this.server = server;
         this.socket = socket;
     }
@@ -22,27 +22,28 @@ public class ClientThread implements Runnable {
     @Override
     public void run() {
         try{
-            // setup
             this.clientOut = new PrintWriter(socket.getOutputStream(), false);
-            Scanner in = new Scanner(socket.getInputStream());
+            Scanner inputStream = new Scanner(socket.getInputStream());
 
-            // start communicating
-            while(!socket.isClosed()){
-                if(in.hasNextLine()){
-                    String input = in.nextLine();
-                    // NOTE: if you want to check server can read input, uncomment next line and check server file console.
-                    // System.out.println(input);
-                    for(ClientThread thatClient : server.getClients()){
-                        PrintWriter thatClientOut = thatClient.getWriter();
-                        if(thatClientOut != null){
-                            thatClientOut.write(input + "\r\n");
-                            thatClientOut.flush();
-                        }
+            communicationStart(inputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void communicationStart(Scanner inputStream)
+    {
+        while(socket.isConnected()){
+            if(inputStream.hasNextLine()){
+                String input = inputStream.nextLine();
+                for(ClientThread client : server.getClients()){
+                    PrintWriter clientMessage = client.getWriter();
+                    if(clientMessage != null){
+                        clientMessage.write(input + "\r\n");
+                        clientMessage.flush();
                     }
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }

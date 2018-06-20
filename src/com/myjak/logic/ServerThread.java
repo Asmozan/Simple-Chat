@@ -8,17 +8,16 @@ import java.util.Scanner;
 public class ServerThread implements Runnable {
     private Socket socket;
     private String userName;
-    private boolean isAlived;
     private final LinkedList<String> messagesToSend;
     private boolean hasMessages = false;
 
-    public ServerThread(Socket socket, String userName){
+    ServerThread(Socket socket, String userName){
         this.socket = socket;
         this.userName = userName;
-        messagesToSend = new LinkedList<String>();
+        messagesToSend = new LinkedList<>();
     }
 
-    public void addNextMessage(String message){
+    void addNextMessage(String message){
         synchronized (messagesToSend){
             hasMessages = true;
             messagesToSend.push(message);
@@ -27,31 +26,28 @@ public class ServerThread implements Runnable {
 
     @Override
     public void run(){
-        System.out.println("Welcome :" + userName);
-
-        System.out.println("Local Port :" + socket.getLocalPort());
-        System.out.println("Server = " + socket.getRemoteSocketAddress() + ":" + socket.getPort());
+        System.out.println("Welcome " + userName + "!");
+        System.out.println("Local Port:" + socket.getLocalPort());
+        System.out.println("Server: " + socket.getRemoteSocketAddress() + ":" + socket.getPort());
 
         try{
             PrintWriter serverOut = new PrintWriter(socket.getOutputStream(), false);
             InputStream serverInStream = socket.getInputStream();
-            Scanner serverIn = new Scanner(serverInStream);
-            // BufferedReader userBr = new BufferedReader(new InputStreamReader(userInStream));
-            // Scanner userIn = new Scanner(userInStream);
+            Scanner serverStream = new Scanner(serverInStream);
 
-            while(!socket.isClosed()){
+            while(socket.isConnected()){
                 if(serverInStream.available() > 0){
-                    if(serverIn.hasNextLine()){
-                        System.out.println(serverIn.nextLine());
+                    if(serverStream.hasNextLine()){
+                        System.out.println(serverStream.nextLine());
                     }
                 }
                 if(hasMessages){
-                    String nextSend = "";
+                    String nextMessage;
                     synchronized(messagesToSend){
-                        nextSend = messagesToSend.pop();
+                        nextMessage = messagesToSend.pop();
                         hasMessages = !messagesToSend.isEmpty();
                     }
-                    serverOut.println(userName + " > " + nextSend);
+                    serverOut.println(userName + " > " + nextMessage);
                     serverOut.flush();
                 }
             }
